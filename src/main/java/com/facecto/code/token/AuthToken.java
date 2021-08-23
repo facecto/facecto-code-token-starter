@@ -1,0 +1,25 @@
+package com.facecto.code.token;
+
+import org.apache.shiro.authc.AuthenticationToken;
+
+/**
+ * @author Jon So, https://cto.pub, https://github.com/facecto
+ * @version v1.1.0 (2021/08/08)
+ */
+public class AuthToken implements AuthenticationToken {
+    private String token;
+
+    public AuthToken(String token){
+        this.token = token;
+    }
+
+    @Override
+    public String getPrincipal() {
+        return token;
+    }
+
+    @Override
+    public Object getCredentials() {
+        return token;
+    }
+}
