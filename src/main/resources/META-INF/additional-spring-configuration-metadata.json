@@ -1,24 +1,18 @@
 {
   "properties": [
     {
-      "name": "app.token.token-key",
+      "name": "app.token.key",
       "type": "java.lang.String",
-      "description": "the token key in redis."
+      "description": "app.token.key."
     },
     {
       "name": "app.token.secret",
       "type": "java.lang.String",
-      "description": "token.secret."
-    },
-    {
-      "name": "app.token.token-name",
-      "type": "java.lang.String",
-      "description": "the name for token, maybe is token."
+      "description": "app.token.secret."
     },
     {
       "name": "app.token.expire",
-      "type": "java.lang.Integer",
-      "description": "the token expire time (seconds)."
+      "type": "java.lang.String",
+      "description": "app.token.expire."
     }
-  ]
-}
+  ] }

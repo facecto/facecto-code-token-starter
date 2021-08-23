@@ -1,9 +1,10 @@
 package com.facecto.code.token;
 
 import com.alibaba.fastjson.JSONObject;
+import com.facecto.code.base.CodeException;
 import com.facecto.code.base.CodeResult;
 import com.facecto.code.base.util.HttpContextUtils;
-import com.facecto.code.token.config.TokenConfig;
+import com.facecto.code.token.properties.TokenProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationException;
@@ -27,7 +28,7 @@ import java.io.IOException;
 public class AuthFilter extends AuthenticatingFilter {
 
     @Autowired
-    TokenConfig tokenConfig;
+    TokenProperties tokenProperties;
 
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
@@ -99,11 +100,16 @@ public class AuthFilter extends AuthenticatingFilter {
     }
 
     private String getRequestToken(HttpServletRequest httpRequest){
-        String token = httpRequest.getHeader(tokenConfig.getTokenName());
-        if(StringUtils.isBlank(token)){
-            token = httpRequest.getParameter(tokenConfig.getTokenName());
+        String token = "";
+        try{
+            token = httpRequest.getHeader("token");
+            if(StringUtils.isEmpty(token)){
+                token = httpRequest.getParameter("token");
+            }
+            return token;
+        } catch (Exception e){
+            throw new CodeException("Token is null!");
         }
-        return token;
     }
 
 

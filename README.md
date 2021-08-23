@@ -20,7 +20,52 @@ app:
     expire: Integer format. the token expire time (seconds).    
 ```
 
-## Step 3 : No more step. enjoy it.
+## Step 3：create ShiroConfig.java in your project
+```
+import com.facecto.code.token.AuthFilter;
+import org.apache.shiro.mgt.SecurityManager;
+import org.springframework.context.annotation.Bean;
+import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.servlet.Filter;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+@Configuration
+public class ShiroConfig {
+    @Bean("shiroFilter")
+    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
+        ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
+        shiroFilter.setSecurityManager(securityManager);
+        Map<String, Filter> filters = new HashMap<>();
+        filters.put("oauth2", new AuthFilter());
+        shiroFilter.setFilters(filters);
+        Map<String, String> filterMap = new LinkedHashMap<>();
+        filterMap.put("/login", "anon");
+        filterMap.put("/**", "oauth2");
+        shiroFilter.setFilterChainDefinitionMap(filterMap);
+        return shiroFilter;
+    }
+}
+```
+
+## Step 4 : add annotation
+```
+@ComponentScans({
+        @ComponentScan(basePackages = {
+                "com.facecto.code"
+        })
+})
+@EnableConfigurationProperties(TokenProperties.class)
+public class App {
+    public static void main(String[] args) {
+        SpringApplication.run(App.class,args);
+    }
+}
+```
+
+## Step 5 : No more step. enjoy it.
 
 
 # About facecto.com

@@ -2,9 +2,9 @@ package com.facecto.code.token;
 
 import com.alibaba.fastjson.JSON;
 import com.facecto.code.base.CodeException;
-import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenUser;
+import com.facecto.code.token.properties.TokenProperties;
 import com.facecto.code.token.util.JwtUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
@@ -29,14 +29,14 @@ import java.util.Set;
 @Component
 public class AuthRealm extends AuthorizingRealm {
 
-    @Autowired(required = true)
+    @Autowired
     JwtUtils jwtUtils;
 
-    @Autowired(required = true)
+    @Autowired
     RedisTemplate redisTemplate;
 
     @Autowired
-    private TokenConfig tokenConfig;
+    TokenProperties tokenProperties;
 
     @Override
     public boolean supports(AuthenticationToken token) {
@@ -58,7 +58,7 @@ public class AuthRealm extends AuthorizingRealm {
         info.setStringPermissions(permsSet);
         info.setRoles(roleSet);
         if(SecurityUtils.getSubject().getPrincipal()==null){
-            throw new CodeException("需要登录后访问!", HttpStatus.UNAUTHORIZED.value());
+            throw new CodeException("Authorization required!", HttpStatus.UNAUTHORIZED.value());
         }
         return info;
     }
@@ -68,43 +68,43 @@ public class AuthRealm extends AuthorizingRealm {
         String accessToken = (String) token.getPrincipal();
 
         if (StringUtils.isBlank(accessToken)) {
-            throw new CodeException("需要登录后访问!!", HttpStatus.UNAUTHORIZED.value());
+            throw new CodeException("Authorization required!!", HttpStatus.UNAUTHORIZED.value());
         }
 
         Claims claims = null;
         try {
             claims = jwtUtils.getClaimByToken(accessToken);
         } catch (Exception e) {
-            throw new CodeException("授权信息错误，请重新登录!", HttpStatus.UNAUTHORIZED.value());
+            throw new CodeException("The authorization information is wrong!", HttpStatus.UNAUTHORIZED.value());
         }
 
         if (claims == null || jwtUtils.isTokenExpired(claims.getExpiration())) {
-            throw new CodeException("登录信息失效，请重新登录!!", HttpStatus.UNAUTHORIZED.value());
+            throw new CodeException("The authorization is invalid, please login again!", HttpStatus.UNAUTHORIZED.value());
         }
         String userId = jwtUtils.getUserIdByClaim(accessToken);
         Token redisToken;
         try {
-            String key = tokenConfig.getTokenKey() +"-" + userId;
+            String key = tokenProperties.getKey() +"-" + userId;
             String tokenString = redisTemplate.opsForValue().get(key).toString();
 
             redisToken = JSON.parseObject(tokenString,Token.class);
         } catch (Exception e) {
-            throw new CodeException("登录信息失效，请重新登录!!!", HttpStatus.UNAUTHORIZED.value());
+            throw new CodeException("The authorization is invalid, please login again!!", HttpStatus.UNAUTHORIZED.value());
         }
 
         if (redisToken != null && redisToken.getToken().equals(accessToken)) {
             String userString = redisTemplate.opsForValue().get("adm-user-" + userId).toString();
             TokenUser user = JSON.parseObject(userString, TokenUser.class);
             if(user == null){
-                throw new CodeException("账号失效，请联系管理员!!", HttpStatus.UNAUTHORIZED.value());
+                throw new CodeException("The account is invalid!", HttpStatus.UNAUTHORIZED.value());
             }
             if(user.getStatus() == 1){
-                throw new CodeException("账号失效，请联系管理员!!!", HttpStatus.UNAUTHORIZED.value());
+                throw new CodeException("The account is invalid!!", HttpStatus.UNAUTHORIZED.value());
             }
             SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(user, accessToken, getName());
             return info;
         }
 
-        throw new CodeException("登录信息失效，请重新登录!!!!", HttpStatus.UNAUTHORIZED.value());
+        throw new CodeException("The authorization is invalid, please login again!!!", HttpStatus.UNAUTHORIZED.value());
     }
 }
