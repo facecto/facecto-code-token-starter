@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.facecto.code.token.config.ShiroAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.facecto.code.token.config.TokenAutoConfiguration

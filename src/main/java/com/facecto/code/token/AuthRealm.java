@@ -2,7 +2,7 @@ package com.facecto.code.token;
 
 import com.alibaba.fastjson.JSON;
 import com.facecto.code.base.CodeException;
-import com.facecto.code.token.config.ShiroConfig;
+import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenUser;
 import com.facecto.code.token.util.JwtUtils;
@@ -36,7 +36,7 @@ public class AuthRealm extends AuthorizingRealm {
     RedisTemplate redisTemplate;
 
     @Autowired
-    private ShiroConfig shiroConfig;
+    private TokenConfig tokenConfig;
 
     @Override
     public boolean supports(AuthenticationToken token) {
@@ -84,7 +84,7 @@ public class AuthRealm extends AuthorizingRealm {
         String userId = jwtUtils.getUserIdByClaim(accessToken);
         Token redisToken;
         try {
-            String key = shiroConfig.getTokenKey() +"-" + userId;
+            String key = tokenConfig.getTokenKey() +"-" + userId;
             String tokenString = redisTemplate.opsForValue().get(key).toString();
 
             redisToken = JSON.parseObject(tokenString,Token.class);

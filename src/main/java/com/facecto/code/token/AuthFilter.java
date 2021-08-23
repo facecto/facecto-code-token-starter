@@ -3,7 +3,7 @@ package com.facecto.code.token;
 import com.alibaba.fastjson.JSONObject;
 import com.facecto.code.base.CodeResult;
 import com.facecto.code.base.util.HttpContextUtils;
-import com.facecto.code.token.config.ShiroConfig;
+import com.facecto.code.token.config.TokenConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationException;
@@ -27,7 +27,7 @@ import java.io.IOException;
 public class AuthFilter extends AuthenticatingFilter {
 
     @Autowired
-    ShiroConfig shiroConfig;
+    TokenConfig tokenConfig;
 
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
@@ -99,9 +99,9 @@ public class AuthFilter extends AuthenticatingFilter {
     }
 
     private String getRequestToken(HttpServletRequest httpRequest){
-        String token = httpRequest.getHeader(shiroConfig.getTokenName());
+        String token = httpRequest.getHeader(tokenConfig.getTokenName());
         if(StringUtils.isBlank(token)){
-            token = httpRequest.getParameter(shiroConfig.getTokenName());
+            token = httpRequest.getParameter(tokenConfig.getTokenName());
         }
         return token;
     }

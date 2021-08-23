@@ -9,5 +9,5 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan("com.facecto.code.token")
-public class ShiroAutoConfiguration {
+public class TokenAutoConfiguration {
 }

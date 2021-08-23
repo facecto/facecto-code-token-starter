@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConfigurationProperties(prefix = "app.token")
-public class ShiroProperties {
+public class TokenProperties {
     private final static String TOKEN_KEY = "adm-token";
     private final static String SECRET = "3d15d32654bc1af61759a3bacbc0c78a";
     private final static String TOKEN_NAME = "token";

@@ -3,7 +3,7 @@ package com.facecto.code.token.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.facecto.code.base.CodeException;
-import com.facecto.code.token.config.ShiroConfig;
+import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -32,7 +32,7 @@ public class JwtUtils {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private ShiroConfig shiroConfig;
+    private TokenConfig tokenConfig;
 
     /**
      * create a token
@@ -41,20 +41,20 @@ public class JwtUtils {
      */
     public Token generateToken(int userId) {
         Date nowDate = new Date();
-        Date expireDate = new Date(nowDate.getTime() + shiroConfig.getExpire() * 1000);
+        Date expireDate = new Date(nowDate.getTime() + tokenConfig.getExpire() * 1000);
 
         String tokenString = Jwts.builder()
                 .setHeaderParam("type", "JWT")
                 .setSubject(userId + "")
                 .setIssuedAt(nowDate)
                 .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS512, shiroConfig.getSecret())
+                .signWith(SignatureAlgorithm.HS512, tokenConfig.getSecret())
                 .compact();
         Token token = new Token();
         token.setToken(tokenString);
-        token.setExpire(shiroConfig.getExpire() * 1000);
+        token.setExpire(tokenConfig.getExpire() * 1000);
         try{
-            redisTemplate.opsForValue().set(shiroConfig.getTokenKey() +"-" + userId, JSONObject.toJSONString(token));
+            redisTemplate.opsForValue().set(tokenConfig.getTokenKey() +"-" + userId, JSONObject.toJSONString(token));
         }
         catch (Exception e){
             throw new CodeException("Redis server error.", HttpStatus.SERVICE_UNAVAILABLE.value());
@@ -65,7 +65,7 @@ public class JwtUtils {
     public Claims getClaimByToken(String token) {
         try {
             return Jwts.parser()
-                    .setSigningKey(shiroConfig.getSecret())
+                    .setSigningKey(tokenConfig.getSecret())
                     .parseClaimsJws(token)
                     .getBody();
         } catch (CodeException e) {
@@ -93,7 +93,7 @@ public class JwtUtils {
      */
     public boolean clearToken(String token, Integer userId) throws Exception {
 
-        String key = shiroConfig.getTokenKey() +"-" + userId;
+        String key = tokenConfig.getTokenKey() +"-" + userId;
         String token1= redisTemplate.opsForValue().get(key).toString();
         if(token1!=null){
             Token token2 = JSON.parseObject(token1,Token.class);

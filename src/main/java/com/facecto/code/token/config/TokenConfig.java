@@ -1,6 +1,6 @@
 package com.facecto.code.token.config;
 
-import com.facecto.code.token.properties.ShiroProperties;
+import com.facecto.code.token.properties.TokenProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,24 +10,24 @@ import org.springframework.stereotype.Component;
  * @version v1.1.0 (2021/08/08)
  */
 @Component
-public class ShiroConfig {
+public class TokenConfig {
     @Autowired
-    ShiroProperties shiroProperties;
+    TokenProperties tokenProperties;
 
     public String getTokenKey() {
-        return shiroProperties.getTokenKey();
+        return tokenProperties.getTokenKey();
     }
 
     public String getSecret(){
-        return shiroProperties.getSecret();
+        return tokenProperties.getSecret();
     }
 
     public String getTokenName() {
-        return shiroProperties.getTokenName();
+        return tokenProperties.getTokenName();
     }
 
     public Long getExpire() {
-        return shiroProperties.getExpire();
+        return tokenProperties.getExpire();
     }
 
 }
