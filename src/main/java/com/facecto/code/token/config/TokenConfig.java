@@ -20,7 +20,6 @@ public class TokenConfig {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(authRealm);
         securityManager.setRememberMeManager(null);
-        System.out.println("OOOOOOOOOOOOOOOOOOOOOOKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         return securityManager;
     }
 
