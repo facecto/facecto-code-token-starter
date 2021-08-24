@@ -6,7 +6,7 @@
 
     <groupId>com.facecto.code</groupId>
     <artifactId>facecto-code-token-starter</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>jar</packaging>
 
     <name> ${project.artifactId} </name>
