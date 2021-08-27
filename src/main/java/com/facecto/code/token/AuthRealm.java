@@ -5,7 +5,7 @@ import com.facecto.code.base.CodeException;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenUser;
 import com.facecto.code.token.properties.TokenProperties;
-import com.facecto.code.token.util.JwtUtils;
+import com.facecto.code.token.util.TokenUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 
 /**
+ * For full mode.
+ * Note that the shiro function can only be used in the full mode.
  * @author Jon So, https://cto.pub, https://github.com/facecto
  * @version v1.1.0 (2021/08/08)
  */
@@ -30,7 +32,7 @@ import java.util.Set;
 public class AuthRealm extends AuthorizingRealm {
 
     @Autowired
-    JwtUtils jwtUtils;
+    TokenUtils tokenUtils;
 
     @Autowired
     RedisTemplate redisTemplate;
@@ -48,8 +50,8 @@ public class AuthRealm extends AuthorizingRealm {
         TokenUser user = (TokenUser)principals.getPrimaryPrincipal();
         Integer userId = user.getUserId();
 
-        String permissionString = redisTemplate.opsForValue().get("adm-permissions-" + userId).toString();
-        String roleString = redisTemplate.opsForValue().get("adm-roles-" + userId).toString();
+        String permissionString = redisTemplate.opsForValue().get(tokenProperties.getKey() + "-permissions-" + userId).toString();
+        String roleString = redisTemplate.opsForValue().get(tokenProperties.getKey() + "-roles-" + userId).toString();
 
         Set<String> permsSet = JSON.parseObject(permissionString, Set.class);
         Set<String> roleSet = JSON.parseObject(roleString, Set.class);
@@ -73,15 +75,15 @@ public class AuthRealm extends AuthorizingRealm {
 
         Claims claims = null;
         try {
-            claims = jwtUtils.getClaimByToken(accessToken);
+            claims = tokenUtils.getClaimByToken(accessToken);
         } catch (Exception e) {
             throw new CodeException("The authorization information is wrong!", HttpStatus.UNAUTHORIZED.value());
         }
 
-        if (claims == null || jwtUtils.isTokenExpired(claims.getExpiration())) {
+        if (claims == null || tokenUtils.isTokenExpired(claims.getExpiration())) {
             throw new CodeException("The authorization is invalid, please login again!", HttpStatus.UNAUTHORIZED.value());
         }
-        String userId = jwtUtils.getUserIdByClaim(accessToken);
+        Integer userId = tokenUtils.getUserIdByClaim(accessToken);
         Token redisToken;
         try {
             String key = tokenProperties.getKey() +"-" + userId;
@@ -93,7 +95,7 @@ public class AuthRealm extends AuthorizingRealm {
         }
 
         if (redisToken != null && redisToken.getToken().equals(accessToken)) {
-            String userString = redisTemplate.opsForValue().get("adm-user-" + userId).toString();
+            String userString = redisTemplate.opsForValue().get(tokenProperties.getKey() + "-user-" + userId).toString();
             TokenUser user = JSON.parseObject(userString, TokenUser.class);
             if(user == null){
                 throw new CodeException("The account is invalid!", HttpStatus.UNAUTHORIZED.value());

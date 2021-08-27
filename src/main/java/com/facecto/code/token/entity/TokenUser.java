@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * @author Jon So, https://cto.pub, https://github.com/facecto
@@ -19,4 +20,12 @@ public class TokenUser implements Serializable {
     private String userTel;
     private LocalDateTime userLoginTime;
     private Integer status;
+    /**
+     * If used simple mode, it's no required.
+     */
+    private Set<String> userPermissionSet;
+    /**
+     * If used simple mode, it's no required.
+     */
+    private Set<String> userRolesSet;
 }

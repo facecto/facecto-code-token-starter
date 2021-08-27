@@ -21,6 +21,7 @@ app:
 ```
 
 ## Step 3：create ShiroConfig.java in your project
+Note that the shiro function can only be used in the full mode.
 ```
 import com.facecto.code.token.AuthFilter;
 import org.apache.shiro.mgt.SecurityManager;
@@ -67,6 +68,24 @@ public class App {
 
 ## Step 5 : No more step. enjoy it.
 
+## Notice 1: redis need.
+This component uses redis to access related authorization information. Redis must be introduced in the SpringBoot project.
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+## Notice 2: app.token.key and simple mode.
+The default value of app.token.key is "adm-token".
+simple mode: If you don't use shiro's authorization and verification functions, you can use the simple mode.
+Simple mode allows you to use multiple custom keys in a project.
+
+### simple mode example.
+```
+Token token = generateTokenSimple("app-1", userId);
+
+```
 
 # About facecto.com
 https://facecto.com
