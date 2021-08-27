@@ -160,7 +160,7 @@ public class TokenUtils {
         token.setExpire(tokenProperties.getExpire() * 1000);
         try{
             redisTemplate.opsForValue().set(tokenKey +"-" + user.getUserId(), JSONObject.toJSONString(token));
-            if(hasSimple){
+            if(!hasSimple){
                 setLoginInfo(user,user.getUserPermissionSet(),user.getUserRolesSet());
             } else {
                 setLoginInfo(user);
