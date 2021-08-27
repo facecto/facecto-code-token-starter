@@ -79,7 +79,7 @@ public class TokenUtils {
      * @param token token
      * @param user TokenUser
      * @param tokenKey tokenKey.
-     * @return
+     * @return result
      * @throws Exception
      */
     public boolean clearToken(String token, TokenUser user, String tokenKey) throws Exception {
