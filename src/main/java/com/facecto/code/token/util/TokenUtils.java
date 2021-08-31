@@ -199,7 +199,7 @@ public class TokenUtils {
      * @param token token
      */
     private void saveTokenInfo(String key,TokenUser user, String token){
-        redisTemplate.opsForValue().set(key +"-" + user.getUserId(), JSONObject.toJSONString(token));
+        redisTemplate.opsForValue().set(key +"-token-" + user.getUserId(), JSONObject.toJSONString(token));
     }
 
     /**
