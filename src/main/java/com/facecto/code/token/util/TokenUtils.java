@@ -46,9 +46,9 @@ public class TokenUtils {
     /**
      * Get tokenUser from token
      * no use shiro
-     * @param tokenKey
-     * @param token
-     * @return
+     * @param tokenKey tokenKey
+     * @param token token
+     * @return tokenUser
      */
     public TokenUser getUser(String tokenKey, String token){
         Integer userId = getUserIdByClaim(token);
