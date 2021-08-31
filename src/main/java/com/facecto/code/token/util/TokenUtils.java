@@ -34,7 +34,8 @@ public class TokenUtils {
     private TokenProperties tokenProperties;
 
     /**
-     * get TokenUser from principal
+     * Get tokenUser from principal
+     * use shiro
      * @return current TokenUser
      */
     public TokenUser getUser(){
@@ -43,51 +44,70 @@ public class TokenUtils {
     }
 
     /**
-     * create a token full mode.
+     * Get tokenUser from token
+     * no use shiro
+     * @param tokenKey
+     * @param token
+     * @return
+     */
+    public TokenUser getUser(String tokenKey, String token){
+        Integer userId = getUserIdByClaim(token);
+        Object o = redisTemplate.opsForValue().get(tokenKey + "-user-" + userId);
+        TokenUser user = JSONObject.parseObject(o.toString(), TokenUser.class);
+        return user;
+    }
+
+    /**
+     * Create a token full mode.
+     * the key in config.yaml
      * @param user TokenUser.
      * @return token.
      */
     public Token createToken(TokenUser user) {
         String tokenKey = tokenProperties.getKey();
-        return generateToken(tokenKey,user, false);
+        return generateToken(tokenKey, user, false);
     }
 
     /**
-     * create a token simple mode.
+     * Create a token simple mode.
+     * used param key
      * @param user TokenUser.
-     * @param simpleTokenKey key.
+     * @param tokenKey key.
      * @return token.
      */
-    public Token createToken(TokenUser user, String simpleTokenKey) {
-        return generateToken(simpleTokenKey,user, true);
+    public Token createToken(TokenUser user, String tokenKey) {
+        return generateToken(tokenKey, user, true);
     }
 
-    /**
-     * clean token full mode.
-     * @param token token
-     * @param user TokenUser
-     * @return true or false
-     * @throws Exception
-     */
-    public boolean clearToken(String token, TokenUser user) throws Exception {
-        String key = tokenProperties.getKey() +"-" + user.getUserId();
-        return destoryToken(key,token,user.getUserId());
-    }
 
     /**
-     * clean token simple mode.
+     * Clean token
+     * the key in config.yaml
      * @param token token
-     * @param user TokenUser
-     * @param tokenKey tokenKey.
+     * @param user user
      * @return result
      * @throws Exception
      */
-    public boolean clearToken(String token, TokenUser user, String tokenKey) throws Exception {
-        return destoryToken(tokenKey,token,user.getUserId());
+    public boolean cleanToken(String token, TokenUser user) throws Exception {
+        String key = tokenProperties.getKey();
+        return destoryToken(token,user.getUserId(),key);
     }
 
     /**
-     * getClaimByToken
+     * Clean token
+     * used param key
+     * @param token token
+     * @param user user
+     * @param key key
+     * @return result
+     * @throws Exception
+     */
+    public boolean cleanToken(String token, TokenUser user, String key) throws Exception {
+        return destoryToken(token,user.getUserId(),key);
+    }
+
+    /**
+     * Get claim by token
      * @param token token
      * @return claim
      */
@@ -104,7 +124,7 @@ public class TokenUtils {
     }
 
     /**
-     * getUserIdByClaim
+     * get userId by claim
      * @param token token
      * @return userId
      */
@@ -118,7 +138,7 @@ public class TokenUtils {
     }
 
     /**
-     * check token expired
+     * Check token expired
      *
      * @return true：has expired
      */
@@ -138,7 +158,7 @@ public class TokenUtils {
 
 
     /**
-     * create a token
+     * Create a token
      * @param tokenKey key
      * @param user TokenUser
      * @param hasSimple true or false
@@ -159,11 +179,11 @@ public class TokenUtils {
         token.setToken(tokenString);
         token.setExpire(tokenProperties.getExpire() * 1000);
         try{
-            redisTemplate.opsForValue().set(tokenKey +"-" + user.getUserId(), JSONObject.toJSONString(token));
+            saveTokenInfo(tokenKey,user,tokenString);
             if(!hasSimple){
-                setLoginInfo(user,user.getUserPermissionSet(),user.getUserRolesSet());
+                saveLoginInfo(tokenKey,user,user.getUserPermissionSet(),user.getUserRolesSet());
             } else {
-                setLoginInfo(user);
+                saveLoginInfo(tokenKey,user);
             }
         }
         catch (Exception e){
@@ -173,15 +193,25 @@ public class TokenUtils {
     }
 
     /**
+     * save token to redis
+     * @param key key
+     * @param user tokenUser
+     * @param token token
+     */
+    private void saveTokenInfo(String key,TokenUser user, String token){
+        redisTemplate.opsForValue().set(key +"-" + user.getUserId(), JSONObject.toJSONString(token));
+    }
+
+    /**
      * set user login info, full mode. save user permissions roles into redis
      * @param user TokenUser
      * @param userPermissionSet user permissions set
      * @param userRolesSet user roles set
      */
-    private void setLoginInfo(TokenUser user, Set<String> userPermissionSet, Set<String> userRolesSet) {
-        redisTemplate.opsForValue().set(tokenProperties.getKey() + "-permissions-" + user.getUserId(),JSONObject.toJSONString(userPermissionSet));
-        redisTemplate.opsForValue().set(tokenProperties.getKey() + "-roles-" + user.getUserId(),JSONObject.toJSONString(userRolesSet));
-        redisTemplate.opsForValue().set(tokenProperties.getKey() + "-user-" + user.getUserId(),JSONObject.toJSONString(user));
+    private void saveLoginInfo(String key, TokenUser user, Set<String> userPermissionSet, Set<String> userRolesSet) {
+        redisTemplate.opsForValue().set(key + "-permissions-" + user.getUserId(),JSONObject.toJSONString(userPermissionSet));
+        redisTemplate.opsForValue().set(key + "-roles-" + user.getUserId(),JSONObject.toJSONString(userRolesSet));
+        redisTemplate.opsForValue().set(key + "-user-" + user.getUserId(),JSONObject.toJSONString(user));
     }
 
     /**
@@ -189,19 +219,19 @@ public class TokenUtils {
      * If you do not use shiro to verify permissions, you can use simple mode.
      * @param user TokenUser
      */
-    private void setLoginInfo(TokenUser user) {
-        redisTemplate.opsForValue().set(tokenProperties.getKey() + "-user-" + user.getUserId(),JSONObject.toJSONString(user));
+    private void saveLoginInfo(String key, TokenUser user) {
+        redisTemplate.opsForValue().set(key + "-user-" + user.getUserId(),JSONObject.toJSONString(user));
     }
 
     /**
-     * clean token
-     * @param tokenKey key
-     * @param token token
+     * delete token
+     * @param token  tokenString
      * @param userId userId
+     * @param tokenKey tokenKey
      * @return boolean
      * @throws Exception
      */
-    private boolean destoryToken(String tokenKey, String token, Integer userId) throws Exception {
+    private boolean destoryToken(String token, Integer userId,String tokenKey) throws Exception {
         String key = tokenKey +"-" + userId;
         String token1= redisTemplate.opsForValue().get(key).toString();
         if(token1!=null){
