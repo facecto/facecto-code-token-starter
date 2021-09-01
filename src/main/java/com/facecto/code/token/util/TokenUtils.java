@@ -10,6 +10,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,14 +29,14 @@ import java.util.Set;
 public class TokenUtils {
 
     @Autowired
-    RedisTemplate redisTemplate;
+    RedisUtils redisUtils;
 
     @Autowired
     private TokenProperties tokenProperties;
 
     /**
-     * Get tokenUser from principal
-     * use shiro
+     * Get tokenUser by principal
+     * used shiro
      * @return current TokenUser
      */
     public TokenUser getUser(){
@@ -44,66 +45,126 @@ public class TokenUtils {
     }
 
     /**
-     * Get tokenUser from token
-     * no use shiro
-     * @param tokenKey tokenKey
+     * Get tokenUser from token from redis
+     * no used shiro
+     * @param baseKey baseKey
      * @param token token
      * @return tokenUser
      */
-    public TokenUser getUser(String tokenKey, String token){
+    public TokenUser getUser(String baseKey, String token){
         Integer userId = getUserIdByClaim(token);
-        Object o = redisTemplate.opsForValue().get(tokenKey + "-user-" + userId);
-        TokenUser user = JSONObject.parseObject(o.toString(), TokenUser.class);
+        Object oo = redisUtils.getObject(getUserKey(baseKey,userId));
+        TokenUser user = JSONObject.parseObject(oo.toString(), TokenUser.class);
         return user;
     }
 
     /**
-     * Create a token full mode.
-     * the key in config.yaml
+     * Get user permission by param key from redis
+     * @param baseKey baseKey
+     * @param token token
+     * @return user permission set
+     */
+    public Set<String> getUserPermission(String baseKey, String token){
+        Integer userId = getUserIdByClaim(token);
+        Object oo = redisUtils.getObject(getPermissionKey(baseKey,userId));
+        Set set = JSONObject.parseObject(oo.toString(), Set.class);
+        return set;
+    }
+
+    /**
+     * Get user permission by default key from redis
+     * @param token token
+     * @return user permission set
+     */
+    public Set<String> getUserPermission(String token){
+        return getUserPermission(tokenProperties.getKey(),token);
+    }
+
+    /**
+     * Get user role set by param key from redis
+     * @param baseKey basekey
+     * @param token token
+     * @return user role set
+     */
+    public Set<String> getUserRole(String baseKey, String token){
+        Integer userId = getUserIdByClaim(token);
+        Object oo = redisUtils.getObject(getRolesKey(baseKey,userId));
+        Set set = JSONObject.parseObject(oo.toString(), Set.class);
+        return set;
+    }
+
+    /**
+     * Get user role set by default key from redis
+     * @param token token
+     * @return user role set
+     */
+    public Set<String> getUserRole(String token){
+        return getUserRole(tokenProperties.getKey(), token);
+    }
+
+    /**
+     * Get token from redis by param key from redis
+     * @param baseKey baseKey
+     * @param user user
+     * @return token object
+     */
+    public Token getToken(String baseKey, TokenUser user){
+        Object o = redisUtils.getObject(getTokenKey(baseKey,user));
+        return JSON.parseObject(o.toString(), Token.class);
+    }
+
+    /**
+     * Get token from redis by default key from redis
+     * @param user
+     * @return
+     */
+    public Token getToken(TokenUser user){
+        return getToken(tokenProperties.getKey(),user);
+    }
+
+    /**
+     * Create a token by default key
      * @param user TokenUser.
      * @return token.
      */
     public Token createToken(TokenUser user) {
-        String tokenKey = tokenProperties.getKey();
-        return generateToken(tokenKey, user, false);
+        String baseKey = tokenProperties.getKey();
+        return generateToken(baseKey, user, false);
     }
 
     /**
-     * Create a token simple mode.
-     * used param key
+     * Create a token by param key
      * @param user TokenUser.
-     * @param tokenKey key.
+     * @param baseKey key.
      * @return token.
      */
-    public Token createToken(TokenUser user, String tokenKey) {
-        return generateToken(tokenKey, user, true);
+    public Token createToken(TokenUser user, String baseKey) {
+        return generateToken(baseKey, user, true);
     }
 
 
     /**
-     * Clean token
-     * the key in config.yaml
+     * Clean token by default key
      * @param token token
      * @param user user
      * @return result
      * @throws Exception
      */
     public boolean cleanToken(String token, TokenUser user) throws Exception {
-        String key = tokenProperties.getKey();
-        return destoryToken(token,user.getUserId(),key);
+        String baseKey = tokenProperties.getKey();
+        return destroyToken(token,user,baseKey);
     }
 
     /**
-     * Clean token
-     * used param key
+     * Clean token by param key
      * @param token token
      * @param user user
-     * @param key key
+     * @param baseKey baseKey
      * @return result
      * @throws Exception
      */
-    public boolean cleanToken(String token, TokenUser user, String key) throws Exception {
-        return destoryToken(token,user.getUserId(),key);
+    public boolean cleanToken(String token, TokenUser user, String baseKey) throws Exception {
+        return destroyToken(token,user,baseKey);
     }
 
     /**
@@ -118,13 +179,13 @@ public class TokenUtils {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (CodeException e) {
-            log.debug("validate is token error ", e);
+            log.debug("Token error!", e);
             throw new CodeException("Token error!", HttpStatus.SERVICE_UNAVAILABLE.value());
         }
     }
 
     /**
-     * get userId by claim
+     * Get userId by claim
      * @param token token
      * @return userId
      */
@@ -132,7 +193,7 @@ public class TokenUtils {
         try {
             return Integer.parseInt(getClaimByToken(token).getSubject());
         } catch (Exception e) {
-            log.debug("validate is token error ", e);
+            log.debug("Token error!", e);
             throw new CodeException("Token error!", HttpStatus.SERVICE_UNAVAILABLE.value());
         }
     }
@@ -140,16 +201,16 @@ public class TokenUtils {
     /**
      * Check token expired
      *
-     * @return true：has expired
+     * @return true：expired
      */
     public boolean isTokenExpired(Date expiration) {
         return expiration.before(new Date());
     }
 
     /**
-     * check token expired.
+     * Check token expired.
      * @param token token
-     * @return true：has expired
+     * @return true：expired
      */
     public boolean isTokenExpired(String token){
         Date expiration = getClaimByToken(token).getExpiration();
@@ -179,7 +240,7 @@ public class TokenUtils {
         token.setToken(tokenString);
         token.setExpire(tokenProperties.getExpire() * 1000);
         try{
-            saveTokenInfo(tokenKey,user,tokenString);
+            saveToken(tokenKey,user,tokenString);
             if(!hasSimple){
                 saveLoginInfo(tokenKey,user,user.getUserPermissionSet(),user.getUserRolesSet());
             } else {
@@ -193,54 +254,80 @@ public class TokenUtils {
     }
 
     /**
-     * save token to redis
-     * @param key key
+     * Save user login info: user, permissions, roles
+     * @param baseKey baseKey
+     * @param user user
+     * @param userPermissionSet permission set
+     * @param userRolesSet role set
+     */
+    private void saveLoginInfo(String baseKey, TokenUser user, Set<String> userPermissionSet, Set<String> userRolesSet) {
+        redisUtils.saveObject(getUserKey(baseKey,user),user);
+        redisUtils.saveObject(getPermissionKey(baseKey,user),userPermissionSet);
+        redisUtils.saveObject(getRolesKey(baseKey,user),userRolesSet);
+    }
+
+
+    /**
+     * Save user login info: user
+     * @param baseKey baseKey
+     * @param user user
+     */
+    private void saveLoginInfo(String baseKey, TokenUser user) {
+        redisUtils.saveObject(getUserKey(baseKey,user),user);
+    }
+
+    /**
+     * Save token to redis
+     * @param baseKey baseKey
      * @param user tokenUser
      * @param token token
      */
-    private void saveTokenInfo(String key,TokenUser user, String token){
-        redisTemplate.opsForValue().set(key +"-token-" + user.getUserId(), JSONObject.toJSONString(token));
+    private void saveToken(String baseKey, TokenUser user, String token){
+        redisUtils.saveObject(getTokenKey(baseKey,user),token);
     }
 
     /**
-     * set user login info, full mode. save user permissions roles into redis
-     * @param user TokenUser
-     * @param userPermissionSet user permissions set
-     * @param userRolesSet user roles set
+     * Destroy token (delete in redis)
+     * @param token tokenString
+     * @param user user
+     * @param baseKey basekey
+     * @return true or false
      */
-    private void saveLoginInfo(String key, TokenUser user, Set<String> userPermissionSet, Set<String> userRolesSet) {
-        redisTemplate.opsForValue().set(key + "-permissions-" + user.getUserId(),JSONObject.toJSONString(userPermissionSet));
-        redisTemplate.opsForValue().set(key + "-roles-" + user.getUserId(),JSONObject.toJSONString(userRolesSet));
-        redisTemplate.opsForValue().set(key + "-user-" + user.getUserId(),JSONObject.toJSONString(user));
-    }
-
-    /**
-     * set user login info, simple mode.
-     * If you do not use shiro to verify permissions, you can use simple mode.
-     * @param user TokenUser
-     */
-    private void saveLoginInfo(String key, TokenUser user) {
-        redisTemplate.opsForValue().set(key + "-user-" + user.getUserId(),JSONObject.toJSONString(user));
-    }
-
-    /**
-     * delete token
-     * @param token  tokenString
-     * @param userId userId
-     * @param tokenKey tokenKey
-     * @return boolean
-     * @throws Exception
-     */
-    private boolean destoryToken(String token, Integer userId,String tokenKey) throws Exception {
-        String key = tokenKey +"-" + userId;
-        String token1= redisTemplate.opsForValue().get(key).toString();
-        if(token1!=null){
-            Token token2 = JSON.parseObject(token1,Token.class);
-            if(token2.getToken().equals(token)){
-                redisTemplate.delete(key);
-                return true;
-            }
+    private boolean destroyToken(String token, TokenUser user, String baseKey) {
+        Token token1 = getToken(baseKey,user);
+        if(token1.getToken().equals(token)){
+            redisUtils.delObject(getTokenKey(baseKey,user));
+            return true;
         }
         return false;
+    }
+
+
+
+
+    private String getTokenKey(String baseKey, TokenUser user){
+        return baseKey + "-user-" + user.getUserId() +"-token";
+    }
+    private String getPermissionKey(String baseKey, TokenUser user){
+        return baseKey + "-user-" + user.getUserId() +"-permissions";
+    }
+    private String getRolesKey(String baseKey, TokenUser user){
+        return baseKey + "-user-" + user.getUserId() +"-roles";
+    }
+    private String getUserKey(String baseKey, TokenUser user){
+        return baseKey + "-user-" + user.getUserId();
+    }
+
+    private String getTokenKey(String baseKey, Integer userId){
+        return baseKey + "-user-" + userId +"-token";
+    }
+    private String getPermissionKey(String baseKey, Integer userId){
+        return baseKey + "-user-" + userId +"-permissions";
+    }
+    private String getRolesKey(String baseKey, Integer userId){
+        return baseKey + "-user-" + userId +"-roles";
+    }
+    private String getUserKey(String baseKey, Integer userId){
+        return baseKey + "-user-" + userId;
     }
 }
