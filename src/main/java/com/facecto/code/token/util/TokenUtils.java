@@ -53,7 +53,7 @@ public class TokenUtils {
      */
     public TokenUser getUser(String baseKey, String token){
         Integer userId = getUserIdByClaim(token);
-        Object oo = redisUtils.getObject(getUserKey(baseKey,userId));
+        Object oo = redisUtils.getObject(KeysUtils.getUserKey(baseKey,userId));
         TokenUser user = JSONObject.parseObject(oo.toString(), TokenUser.class);
         return user;
     }
@@ -66,7 +66,7 @@ public class TokenUtils {
      */
     public Set<String> getUserPermission(String baseKey, String token){
         Integer userId = getUserIdByClaim(token);
-        Object oo = redisUtils.getObject(getPermissionKey(baseKey,userId));
+        Object oo = redisUtils.getObject(KeysUtils.getPermissionKey(baseKey,userId));
         Set set = JSONObject.parseObject(oo.toString(), Set.class);
         return set;
     }
@@ -88,7 +88,7 @@ public class TokenUtils {
      */
     public Set<String> getUserRole(String baseKey, String token){
         Integer userId = getUserIdByClaim(token);
-        Object oo = redisUtils.getObject(getRolesKey(baseKey,userId));
+        Object oo = redisUtils.getObject(KeysUtils.getRolesKey(baseKey,userId));
         Set set = JSONObject.parseObject(oo.toString(), Set.class);
         return set;
     }
@@ -109,7 +109,7 @@ public class TokenUtils {
      * @return token object
      */
     public Token getToken(String baseKey, TokenUser user){
-        Object o = redisUtils.getObject(getTokenKey(baseKey,user));
+        Object o = redisUtils.getObject(KeysUtils.getTokenKey(baseKey,user));
         return JSON.parseObject(o.toString(), Token.class);
     }
 
@@ -123,7 +123,7 @@ public class TokenUtils {
     }
 
     /**
-     * Create a token by default key
+     * Create a token by default key and save in redis
      * @param user TokenUser.
      * @return token.
      */
@@ -133,7 +133,7 @@ public class TokenUtils {
     }
 
     /**
-     * Create a token by param key
+     * Create a token by param key and save in redis
      * @param user TokenUser.
      * @param baseKey key.
      * @return token.
@@ -144,7 +144,7 @@ public class TokenUtils {
 
 
     /**
-     * Clean token by default key
+     * Clean token by default key (delete redis key)
      * @param token token
      * @param user user
      * @return result
@@ -156,7 +156,7 @@ public class TokenUtils {
     }
 
     /**
-     * Clean token by param key
+     * Clean token by param key (delete redis key)
      * @param token token
      * @param user user
      * @param baseKey baseKey
@@ -219,7 +219,7 @@ public class TokenUtils {
 
 
     /**
-     * Create a token
+     * Create a token and save in redis
      * @param tokenKey key
      * @param user TokenUser
      * @param hasSimple true or false
@@ -254,26 +254,26 @@ public class TokenUtils {
     }
 
     /**
-     * Save user login info: user, permissions, roles
+     * Save user login info: user, permissions, roles into redis
      * @param baseKey baseKey
      * @param user user
      * @param userPermissionSet permission set
      * @param userRolesSet role set
      */
     private void saveLoginInfo(String baseKey, TokenUser user, Set<String> userPermissionSet, Set<String> userRolesSet) {
-        redisUtils.saveObject(getUserKey(baseKey,user),user);
-        redisUtils.saveObject(getPermissionKey(baseKey,user),userPermissionSet);
-        redisUtils.saveObject(getRolesKey(baseKey,user),userRolesSet);
+        redisUtils.saveObject(KeysUtils.getUserKey(baseKey,user),user);
+        redisUtils.saveObject(KeysUtils.getPermissionKey(baseKey,user),userPermissionSet);
+        redisUtils.saveObject(KeysUtils.getRolesKey(baseKey,user),userRolesSet);
     }
 
 
     /**
-     * Save user login info: user
+     * Save user login info: user into redis
      * @param baseKey baseKey
      * @param user user
      */
     private void saveLoginInfo(String baseKey, TokenUser user) {
-        redisUtils.saveObject(getUserKey(baseKey,user),user);
+        redisUtils.saveObject(KeysUtils.getUserKey(baseKey,user),user);
     }
 
     /**
@@ -283,11 +283,11 @@ public class TokenUtils {
      * @param token token
      */
     private void saveToken(String baseKey, TokenUser user, String token){
-        redisUtils.saveObject(getTokenKey(baseKey,user),token);
+        redisUtils.saveObject(KeysUtils.getTokenKey(baseKey,user),token);
     }
 
     /**
-     * Destroy token (delete in redis)
+     * Destroy token (delete redis key)
      * @param token tokenString
      * @param user user
      * @param baseKey basekey
@@ -296,38 +296,10 @@ public class TokenUtils {
     private boolean destroyToken(String token, TokenUser user, String baseKey) {
         Token token1 = getToken(baseKey,user);
         if(token1.getToken().equals(token)){
-            redisUtils.delObject(getTokenKey(baseKey,user));
+            redisUtils.delObject(KeysUtils.getTokenKey(baseKey,user));
             return true;
         }
         return false;
     }
 
-
-
-
-    private String getTokenKey(String baseKey, TokenUser user){
-        return baseKey + "-user-" + user.getUserId() +"-token";
-    }
-    private String getPermissionKey(String baseKey, TokenUser user){
-        return baseKey + "-user-" + user.getUserId() +"-permissions";
-    }
-    private String getRolesKey(String baseKey, TokenUser user){
-        return baseKey + "-user-" + user.getUserId() +"-roles";
-    }
-    private String getUserKey(String baseKey, TokenUser user){
-        return baseKey + "-user-" + user.getUserId();
-    }
-
-    private String getTokenKey(String baseKey, Integer userId){
-        return baseKey + "-user-" + userId +"-token";
-    }
-    private String getPermissionKey(String baseKey, Integer userId){
-        return baseKey + "-user-" + userId +"-permissions";
-    }
-    private String getRolesKey(String baseKey, Integer userId){
-        return baseKey + "-user-" + userId +"-roles";
-    }
-    private String getUserKey(String baseKey, Integer userId){
-        return baseKey + "-user-" + userId;
-    }
 }
