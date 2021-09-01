@@ -3,9 +3,8 @@ package com.facecto.code.token.util;
 import com.facecto.code.token.entity.TokenUser;
 
 /**
- * @author Jon So, https://cto.pub
- * @version v2.1.0
- * @since I'm cto, architect, developer
+ * @author Jon So, https://cto.pub, https://github.com/facecto
+ * @version v1.1.0 (2021/08/08)
  */
 public class KeysUtils {
     /**
