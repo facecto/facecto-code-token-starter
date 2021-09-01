@@ -11,7 +11,7 @@ public class KeysUtils {
      * get tokenKey
      * @param baseKey baseKey
      * @param user user
-     * @return
+     * @return tokenKey
      */
     public static String getTokenKey(String baseKey, TokenUser user){
         return baseKey + "-user-" + user.getUserId() +"-token";
@@ -21,7 +21,7 @@ public class KeysUtils {
      * get permissionKey
      * @param baseKey baseKey
      * @param user user
-     * @return
+     * @return permissionKey
      */
     public static String getPermissionKey(String baseKey, TokenUser user){
         return baseKey + "-user-" + user.getUserId() +"-permissions";

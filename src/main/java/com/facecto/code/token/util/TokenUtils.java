@@ -115,8 +115,8 @@ public class TokenUtils {
 
     /**
      * Get token from redis by default key from redis
-     * @param user
-     * @return
+     * @param user user
+     * @return token
      */
     public Token getToken(TokenUser user){
         return getToken(tokenProperties.getKey(),user);
