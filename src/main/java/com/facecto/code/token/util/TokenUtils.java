@@ -168,7 +168,7 @@ public class TokenUtils {
      */
     public TokenInfo getTokenInfoByClaim(String token) {
         try {
-            String[] strings = getClaimByToken(token).getSubject().split("|");
+            String[] strings = getClaimByToken(token).getSubject().split("\\|");
             TokenInfo tokenInfo = new TokenInfo()
                     .setUserId(Integer.parseInt(strings[1]))
                     .setAppKey(strings[0]);
