@@ -264,8 +264,7 @@ public class TokenUtils {
      * @param token token
      */
     private void saveToken(String baseKey, TokenUser user, Token token){
-        String tokenString = JSONObject.toJSONString(token);
-        redisUtils.saveObject(KeysUtils.getTokenKey(baseKey,user),tokenString);
+        redisUtils.saveObject(KeysUtils.getTokenKey(baseKey,user),token);
     }
 
     /**
