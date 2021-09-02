@@ -221,7 +221,7 @@ public class TokenUtils {
         token.setToken(tokenString);
         token.setExpire(tokenProperties.getExpire() * 1000);
         try{
-            saveToken(baseKey,user,tokenString);
+            saveToken(baseKey,user,token);
             if(!hasSimple){
                 saveLoginInfo(baseKey,user,user.getUserPermissionSet(),user.getUserRolesSet());
             } else {
@@ -263,8 +263,9 @@ public class TokenUtils {
      * @param user tokenUser
      * @param token token
      */
-    private void saveToken(String baseKey, TokenUser user, String token){
-        redisUtils.saveObject(KeysUtils.getTokenKey(baseKey,user),token);
+    private void saveToken(String baseKey, TokenUser user, Token token){
+        String tokenString = JSONObject.toJSONString(token);
+        redisUtils.saveObject(KeysUtils.getTokenKey(baseKey,user),tokenString);
     }
 
     /**
