@@ -3,7 +3,7 @@
     {
       "name": "app.token.key",
       "type": "java.lang.String",
-      "description": "app.token.key. the default value is: adm-token."
+      "description": "app.token.key. the default value is: adm."
     },
     {
       "name": "app.token.secret",

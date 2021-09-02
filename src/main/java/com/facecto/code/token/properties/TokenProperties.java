@@ -11,10 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "app.token")
 public class TokenProperties {
-    private final static String TOKEN_KEY = "adm-token";
+    private final static String KEY = "adm";
     private final static String SECRET = "3d15d32654bc1af61759a3bacbc0c78a";
     private final static Long EXPIRE = 604800L;
-    private String key = TOKEN_KEY;
+    private String key = KEY;
     private String secret = SECRET;
     private Long expire = EXPIRE;
 
