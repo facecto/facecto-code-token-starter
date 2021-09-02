@@ -24,6 +24,7 @@ import java.io.IOException;
 /**
  * For full mode.
  * Note that the shiro function can only be used in the full mode.
+ *
  * @author Jon So, https://cto.pub, https://github.com/facecto
  * @version v1.1.0 (2021/08/08)
  */
@@ -35,7 +36,7 @@ public class AuthFilter extends AuthenticatingFilter {
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
         String token = getRequestToken((HttpServletRequest) request);
-        if(StringUtils.isBlank(token)){
+        if (StringUtils.isBlank(token)) {
             return null;
         }
         return new AuthToken(token);
@@ -43,16 +44,13 @@ public class AuthFilter extends AuthenticatingFilter {
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
-        if(((HttpServletRequest) request).getMethod().equals(RequestMethod.OPTIONS.name())){
-            return true;
-        }
-        return false;
+        return ((HttpServletRequest) request).getMethod().equals(RequestMethod.OPTIONS.name());
     }
 
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
         String token = getRequestToken((HttpServletRequest) request);
-        if(StringUtils.isBlank(token)){
+        if (StringUtils.isBlank(token)) {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
             httpResponse.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
@@ -101,15 +99,15 @@ public class AuthFilter extends AuthenticatingFilter {
         return false;
     }
 
-    private String getRequestToken(HttpServletRequest httpRequest){
+    private String getRequestToken(HttpServletRequest httpRequest) {
         String token = "";
-        try{
+        try {
             token = httpRequest.getHeader("token");
-            if(StringUtils.isEmpty(token)){
+            if (StringUtils.isEmpty(token)) {
                 token = httpRequest.getParameter("token");
             }
             return token;
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new CodeException("Token is null!");
         }
     }

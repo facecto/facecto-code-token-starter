@@ -17,35 +17,38 @@ public class RedisUtils {
 
     /**
      * Save object to redis
+     *
      * @param fullKey fullKey
-     * @param o object
+     * @param o       object
      */
-    public void saveObject(String fullKey,Object o){
+    public void saveObject(String fullKey, Object o) {
         redisTemplate.opsForValue().set(fullKey, JSONObject.toJSONString(o));
     }
 
     /**
      * Get object from redis
+     *
      * @param fullKey fullKey
      * @return object
      */
-    public Object getObject(String fullKey){
-        if(StringUtils.isEmpty(fullKey)){
-            throw new CodeException("The key is empty." );
+    public Object getObject(String fullKey) {
+        if (StringUtils.isEmpty(fullKey)) {
+            throw new CodeException("The key is empty.");
         }
-        try{
+        try {
             Object o = redisTemplate.opsForValue().get(fullKey);
             return o;
-        } catch (Exception ex){
-            throw new CodeException("Can't read object data from redis of key:" + fullKey );
+        } catch (Exception ex) {
+            throw new CodeException("Can't read object data from redis of key:" + fullKey);
         }
     }
 
     /**
      * Delete key from redis
+     *
      * @param fullKey fullKey
      */
-    public void delObject(String fullKey){
+    public void delObject(String fullKey) {
         redisTemplate.delete(fullKey);
     }
 }

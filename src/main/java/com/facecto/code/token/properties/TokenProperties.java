@@ -1,6 +1,5 @@
 package com.facecto.code.token.properties;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,21 +17,26 @@ public class TokenProperties {
     private String secret = SECRET;
     private Long expire = EXPIRE;
 
-    public String getKey(){
+    public String getKey() {
         return this.key;
     }
-    public void setKey(String value){
-        this.key=value;
+
+    public void setKey(String value) {
+        this.key = value;
     }
-    public String getSecret(){
+
+    public String getSecret() {
         return this.secret;
     }
-    public void setSecret(String value){
-        this.secret=value;
+
+    public void setSecret(String value) {
+        this.secret = value;
     }
-    public Long getExpire(){
+
+    public Long getExpire() {
         return this.expire;
     }
+
     public void setExpire(Long expire) {
         this.expire = expire;
     }
