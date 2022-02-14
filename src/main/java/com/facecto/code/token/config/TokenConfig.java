@@ -1,37 +1,32 @@
 package com.facecto.code.token.config;
 
-import com.facecto.code.token.AuthRealm;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.spring.LifecycleBeanPostProcessor;
-import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
+import com.facecto.code.token.properties.TokenProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
- * @author Jon So, https://cto.pub, https://github.com/facecto
- * @version v1.1.0 (2021/08/08)
+ * SafeConfig
+ * @author Jon So, https://cto.pub, https://facecto.com, https://github.com/facecto
+ * @version v1.1.0 (2022/01/01)
  */
-@Configuration
+@Component
 public class TokenConfig {
-    @Bean("securityManager")
-    public SecurityManager securityManager(AuthRealm authRealm) {
-        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(authRealm);
-        securityManager.setRememberMeManager(null);
-        return securityManager;
+    @Autowired
+    TokenProperties tokenProperties;
+
+    private String key ;
+    private String secret;
+    private Long expire ;
+
+    public String getKey() {
+        return tokenProperties.getKey();
     }
 
-    @Bean("lifecycleBeanPostProcessor")
-    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
-        return new LifecycleBeanPostProcessor();
+    public String getSecret() {
+        return tokenProperties.getSecret();
+    }
+    public Long getExpire() {
+        return tokenProperties.getExpire();
     }
 
-    @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
-        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
-        advisor.setSecurityManager(securityManager);
-        return advisor;
-    }
 }

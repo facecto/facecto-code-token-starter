@@ -7,15 +7,14 @@ A token base library, based on shiro to achieve login verification.
 <dependency>
   <groupId>com.facecto.code</groupId>
   <artifactId>facecto-code-token-starter</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 ## Setp 2: setting application.yaml
 ```
 app:
-  safe:
-    token-key: String format. the key in redis.
-    token-name: true|false. the token name in http head.
+  token:
+    key: String format. the key in redis.
     secret: String format. the token secret. example: "3d15d32654bc1af61759a3bacbc0c78a"
     expire: Integer format. the token expire time (seconds).    
 ```
@@ -23,7 +22,7 @@ app:
 ## Step 3：create ShiroConfig.java in your project
 Note that the shiro function can only be used in the full mode.
 ```
-import com.facecto.code.token.AuthFilter;
+import com.facecto.code.token.auth.AuthFilter;
 import org.apache.shiro.mgt.SecurityManager;
 import org.springframework.context.annotation.Bean;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -53,12 +52,7 @@ public class ShiroConfig {
 
 ## Step 4 : add annotation
 ```
-@ComponentScans({
-        @ComponentScan(basePackages = {
-                "com.facecto.code"
-        })
-})
-@EnableConfigurationProperties(TokenProperties.class)
+@EnableCodeToken
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class,args);
@@ -83,10 +77,17 @@ Simple mode allows you to use multiple custom keys in a project.
 
 ### simple mode example.
 ```
-Token token = generateTokenSimple("app-1", userId);
+    @Autowired
+    TokenHandler tokenHandler;
+    
+    ...
+    
+    Token token = tokenHandler.createToken(user);
 
 ```
 
 # About facecto.com
 https://facecto.com
 
+# Document update time
+2020-02-14

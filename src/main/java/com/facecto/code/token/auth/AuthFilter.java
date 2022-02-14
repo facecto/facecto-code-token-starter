@@ -1,4 +1,4 @@
-package com.facecto.code.token;
+package com.facecto.code.token.auth;
 
 import com.alibaba.fastjson.JSONObject;
 import com.facecto.code.base.CodeException;

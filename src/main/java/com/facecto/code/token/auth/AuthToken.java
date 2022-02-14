@@ -1,4 +1,4 @@
-package com.facecto.code.token;
+package com.facecto.code.token.auth;
 
 import org.apache.shiro.authc.AuthenticationToken;
 

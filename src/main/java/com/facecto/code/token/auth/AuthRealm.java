@@ -1,4 +1,4 @@
-package com.facecto.code.token;
+package com.facecto.code.token.auth;
 
 import com.alibaba.fastjson.JSON;
 import com.facecto.code.base.CodeException;
@@ -8,7 +8,7 @@ import com.facecto.code.token.entity.TokenUser;
 import com.facecto.code.token.properties.TokenProperties;
 import com.facecto.code.token.util.KeysUtils;
 import com.facecto.code.token.util.RedisUtils;
-import com.facecto.code.token.util.TokenUtils;
+import com.facecto.code.token.TokenHandler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -35,7 +35,7 @@ import java.util.Set;
 @Component
 public class AuthRealm extends AuthorizingRealm {
     @Autowired
-    TokenUtils tokenUtils;
+    TokenHandler tokenHandler;
     @Autowired
     RedisTemplate redisTemplate;
     @Autowired
@@ -73,11 +73,11 @@ public class AuthRealm extends AuthorizingRealm {
         }
         Claims claims = null;
         try {
-            claims = tokenUtils.getClaimByToken(accessToken);
-            if (claims == null || tokenUtils.isTokenExpired(claims.getExpiration())) {
+            claims = tokenHandler.getClaimByToken(accessToken);
+            if (claims == null || tokenHandler.isTokenExpired(claims.getExpiration())) {
                 throw new CodeException("The authorization is invalid, please login again!", HttpStatus.UNAUTHORIZED.value());
             }
-            TokenInfo tokenInfo = tokenUtils.getTokenInfoByClaim(accessToken);
+            TokenInfo tokenInfo = tokenHandler.getTokenInfoByClaim(accessToken);
             if (!tokenInfo.getAppKey().equals(tokenProperties.getKey())) {
                 throw new CodeException("The token is invalid, check baseKey!", HttpStatus.UNAUTHORIZED.value());
             }

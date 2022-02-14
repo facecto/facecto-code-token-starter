@@ -1,4 +1,4 @@
-package com.facecto.code.token.util;
+package com.facecto.code.token;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -7,6 +7,8 @@ import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenInfo;
 import com.facecto.code.token.entity.TokenUser;
 import com.facecto.code.token.properties.TokenProperties;
+import com.facecto.code.token.util.KeysUtils;
+import com.facecto.code.token.util.RedisUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,7 +27,7 @@ import java.util.Set;
  */
 @Component
 @Slf4j
-public class TokenUtils {
+public class TokenHandler {
 
     @Autowired
     RedisUtils redisUtils;
@@ -196,6 +198,20 @@ public class TokenUtils {
     public boolean isTokenExpired(String token){
         Date expiration = getClaimByToken(token).getExpiration();
         return isTokenExpired(expiration);
+    }
+
+    /**
+     * Checking the existence of token
+     * @param token
+     * @return
+     */
+    private boolean checkToken(String token){
+        String baseKey = tokenProperties.getKey();
+        // 检测token是否存在于redis
+        // 如果存在返回true
+        // 如果不存在返回false
+        // 这个方法要嵌入到所有的token操作中，避免redis已经没有token，还在用字符串token做鉴权
+        return false;
     }
 
 
