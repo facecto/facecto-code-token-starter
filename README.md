@@ -7,7 +7,7 @@ A token base library, based on shiro to achieve login verification.
 <dependency>
   <groupId>com.facecto.code</groupId>
   <artifactId>facecto-code-token-starter</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
 </dependency>
 ```
 ## Setp 2: setting application.yaml
