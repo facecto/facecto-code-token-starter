@@ -28,24 +28,6 @@ public class AuthConfig {
         return securityManager;
     }
 
-//    @Bean("shiroFilter")
-//    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
-//        ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
-//        shiroFilter.setSecurityManager(securityManager);
-//        Map<String, Filter> filters = new HashMap<>();
-//        filters.put("code-auth", new AuthFilter());
-//        shiroFilter.setFilters(filters);
-//        Map<String, String> filterMap = new LinkedHashMap<>();
-//        for (String a: authFilter.getAnnos()) {
-//            filterMap.put(a,"anon");
-//        }
-//        for(String b: authFilter.getAuths()){
-//            filterMap.put(b,"code-auth");
-//        }
-//        shiroFilter.setFilterChainDefinitionMap(filterMap);
-//        return shiroFilter;
-//    }
-
     @Bean("lifecycleBeanPostProcessor")
     public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
         return new LifecycleBeanPostProcessor();

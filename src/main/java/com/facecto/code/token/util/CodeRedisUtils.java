@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @version v1.1.0 (2021/08/08)
  */
 @Component
-public class RedisUtils {
+public class CodeRedisUtils {
 
     @Autowired
     RedisTemplate redisTemplate;
@@ -38,8 +38,7 @@ public class RedisUtils {
             throw new CodeException("The key is empty.");
         }
         try {
-            Object o = redisTemplate.opsForValue().get(fullKey);
-            return o;
+            return redisTemplate.opsForValue().get(fullKey);
         } catch (Exception ex) {
             throw new CodeException("Can't read object data from redis of key:" + fullKey);
         }

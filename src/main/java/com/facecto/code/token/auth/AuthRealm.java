@@ -7,8 +7,8 @@ import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenInfo;
 import com.facecto.code.token.entity.TokenUser;
-import com.facecto.code.token.util.KeysUtils;
-import com.facecto.code.token.util.RedisUtils;
+import com.facecto.code.token.util.TokenKeysUtils;
+import com.facecto.code.token.util.CodeRedisUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -42,7 +42,7 @@ public class AuthRealm extends AuthorizingRealm {
     RedisTemplate redisTemplate;
 
     @Autowired
-    RedisUtils redisUtils;
+    CodeRedisUtils codeRedisUtils;
 
     @Autowired
     TokenConfig.ApiToken apiToken;
@@ -58,11 +58,10 @@ public class AuthRealm extends AuthorizingRealm {
         TokenUser user = (TokenUser) principals.getPrimaryPrincipal();
         Integer userId = user.getUserId();
 
-
-        Set<String> permsSet = JSON.parseObject(redisUtils
-                .getObject(KeysUtils.getPermissionKey(apiToken.getKey(), userId)).toString(), Set.class);
-        Set<String> roleSet = JSON.parseObject(redisUtils
-                .getObject(KeysUtils.getRolesKey(apiToken.getKey(), userId)).toString(), Set.class);
+        Set<String> permsSet = JSON.parseObject(codeRedisUtils
+                .getObject(TokenKeysUtils.getPermissionKey(apiToken.getKey(), userId)).toString(), Set.class);
+        Set<String> roleSet = JSON.parseObject(codeRedisUtils
+                .getObject(TokenKeysUtils.getRolesKey(apiToken.getKey(), userId)).toString(), Set.class);
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         info.setStringPermissions(permsSet);
         info.setRoles(roleSet);
@@ -89,9 +88,9 @@ public class AuthRealm extends AuthorizingRealm {
             if (!tokenInfo.getAppKey().equals(apiToken.getKey())) {
                 throw new CodeException("The token is invalid, check baseKey!", HttpStatus.UNAUTHORIZED.value());
             }
-            Token redisToken = JSON.parseObject(redisUtils.getObject(KeysUtils.getTokenKey(tokenInfo.getAppKey(), tokenInfo.getUserId())).toString(), Token.class);
+            Token redisToken = JSON.parseObject(codeRedisUtils.getObject(TokenKeysUtils.getTokenKey(tokenInfo.getAppKey(), tokenInfo.getUserId())).toString(), Token.class);
             if (redisToken != null && redisToken.getToken().equals(accessToken)) {
-                TokenUser user = JSON.parseObject(redisUtils.getObject(KeysUtils.getUserKey(tokenInfo.getAppKey(), tokenInfo.getUserId())).toString(), TokenUser.class);
+                TokenUser user = JSON.parseObject(codeRedisUtils.getObject(TokenKeysUtils.getUserKey(tokenInfo.getAppKey(), tokenInfo.getUserId())).toString(), TokenUser.class);
                 if (user == null) {
                     throw new CodeException("The account is invalid!", HttpStatus.UNAUTHORIZED.value());
                 }

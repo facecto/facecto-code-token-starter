@@ -7,8 +7,8 @@ import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenInfo;
 import com.facecto.code.token.entity.TokenUser;
-import com.facecto.code.token.util.KeysUtils;
-import com.facecto.code.token.util.RedisUtils;
+import com.facecto.code.token.util.TokenKeysUtils;
+import com.facecto.code.token.util.CodeRedisUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -30,7 +30,7 @@ import java.util.Set;
 public class TokenHandler {
 
     @Autowired
-    RedisUtils redisUtils;
+    CodeRedisUtils codeRedisUtils;
 
     @Autowired
     TokenConfig.ApiToken apiToken;
@@ -56,7 +56,7 @@ public class TokenHandler {
      */
     public TokenUser getUser(String token) {
         TokenInfo tokenInfo = getTokenInfoByClaim(token);
-        Object oo = redisUtils.getObject(KeysUtils.getUserKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
+        Object oo = codeRedisUtils.getObject(TokenKeysUtils.getUserKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
         TokenUser user = JSONObject.parseObject(oo.toString(), TokenUser.class);
         return user;
     }
@@ -69,7 +69,7 @@ public class TokenHandler {
      */
     public Set<String> getUserPermission(String token) {
         TokenInfo tokenInfo = getTokenInfoByClaim(token);
-        Object oo = redisUtils.getObject(KeysUtils.getPermissionKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
+        Object oo = codeRedisUtils.getObject(TokenKeysUtils.getPermissionKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
         return JSONObject.parseObject(oo.toString(), Set.class);
     }
 
@@ -82,7 +82,7 @@ public class TokenHandler {
      */
     public Set<String> getUserRole(String token) {
         TokenInfo tokenInfo = getTokenInfoByClaim(token);
-        Object oo = redisUtils.getObject(KeysUtils.getRolesKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
+        Object oo = codeRedisUtils.getObject(TokenKeysUtils.getRolesKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
         return JSONObject.parseObject(oo.toString(), Set.class);
     }
 
@@ -94,7 +94,7 @@ public class TokenHandler {
      * @return token object
      */
     public Token getToken(String baseKey, TokenUser user) {
-        Object o = redisUtils.getObject(KeysUtils.getTokenKey(baseKey, user));
+        Object o = codeRedisUtils.getObject(TokenKeysUtils.getTokenKey(baseKey, user));
         return JSON.parseObject(o.toString(), Token.class);
     }
 
@@ -274,9 +274,9 @@ public class TokenHandler {
      * @param userRolesSet      role set
      */
     private void saveLoginInfo(String baseKey, TokenUser user, Set<String> userPermissionSet, Set<String> userRolesSet) {
-        redisUtils.saveObject(KeysUtils.getUserKey(baseKey, user), user);
-        redisUtils.saveObject(KeysUtils.getPermissionKey(baseKey, user), userPermissionSet);
-        redisUtils.saveObject(KeysUtils.getRolesKey(baseKey, user), userRolesSet);
+        codeRedisUtils.saveObject(TokenKeysUtils.getUserKey(baseKey, user), user);
+        codeRedisUtils.saveObject(TokenKeysUtils.getPermissionKey(baseKey, user), userPermissionSet);
+        codeRedisUtils.saveObject(TokenKeysUtils.getRolesKey(baseKey, user), userRolesSet);
     }
 
 
@@ -287,7 +287,7 @@ public class TokenHandler {
      * @param user    user
      */
     private void saveLoginInfo(String baseKey, TokenUser user) {
-        redisUtils.saveObject(KeysUtils.getUserKey(baseKey, user), user);
+        codeRedisUtils.saveObject(TokenKeysUtils.getUserKey(baseKey, user), user);
     }
 
     /**
@@ -298,7 +298,7 @@ public class TokenHandler {
      * @param token   token
      */
     private void saveToken(String baseKey, TokenUser user, Token token) {
-        redisUtils.saveObject(KeysUtils.getTokenKey(baseKey, user), token);
+        codeRedisUtils.saveObject(TokenKeysUtils.getTokenKey(baseKey, user), token);
     }
 
     /**
@@ -312,7 +312,7 @@ public class TokenHandler {
     private boolean destroyToken(String token, TokenUser user, String baseKey) {
         Token token1 = getToken(baseKey, user);
         if (token1.getToken().equals(token)) {
-            redisUtils.delObject(KeysUtils.getTokenKey(baseKey, user));
+            codeRedisUtils.delObject(TokenKeysUtils.getTokenKey(baseKey, user));
             return true;
         }
         return false;
