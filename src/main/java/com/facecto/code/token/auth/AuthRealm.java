@@ -2,17 +2,20 @@ package com.facecto.code.token.auth;
 
 import com.alibaba.fastjson.JSON;
 import com.facecto.code.base.CodeException;
+import com.facecto.code.token.TokenHandler;
+import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenInfo;
 import com.facecto.code.token.entity.TokenUser;
-import com.facecto.code.token.properties.TokenProperties;
 import com.facecto.code.token.util.KeysUtils;
 import com.facecto.code.token.util.RedisUtils;
-import com.facecto.code.token.TokenHandler;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.*;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -21,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
 
 import java.util.Set;
 
@@ -38,10 +40,13 @@ public class AuthRealm extends AuthorizingRealm {
     TokenHandler tokenHandler;
     @Autowired
     RedisTemplate redisTemplate;
-    @Autowired
-    TokenProperties tokenProperties;
+
     @Autowired
     RedisUtils redisUtils;
+
+    @Autowired
+    TokenConfig.ApiToken apiToken;
+
 
     @Override
     public boolean supports(AuthenticationToken token) {
@@ -52,10 +57,12 @@ public class AuthRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
         TokenUser user = (TokenUser) principals.getPrimaryPrincipal();
         Integer userId = user.getUserId();
+
+
         Set<String> permsSet = JSON.parseObject(redisUtils
-                .getObject(KeysUtils.getPermissionKey(tokenProperties.getKey(), userId)).toString(), Set.class);
+                .getObject(KeysUtils.getPermissionKey(apiToken.getKey(), userId)).toString(), Set.class);
         Set<String> roleSet = JSON.parseObject(redisUtils
-                .getObject(KeysUtils.getRolesKey(tokenProperties.getKey(), userId)).toString(), Set.class);
+                .getObject(KeysUtils.getRolesKey(apiToken.getKey(), userId)).toString(), Set.class);
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         info.setStringPermissions(permsSet);
         info.setRoles(roleSet);
@@ -78,7 +85,8 @@ public class AuthRealm extends AuthorizingRealm {
                 throw new CodeException("The authorization is invalid, please login again!", HttpStatus.UNAUTHORIZED.value());
             }
             TokenInfo tokenInfo = tokenHandler.getTokenInfoByClaim(accessToken);
-            if (!tokenInfo.getAppKey().equals(tokenProperties.getKey())) {
+
+            if (!tokenInfo.getAppKey().equals(apiToken.getKey())) {
                 throw new CodeException("The token is invalid, check baseKey!", HttpStatus.UNAUTHORIZED.value());
             }
             Token redisToken = JSON.parseObject(redisUtils.getObject(KeysUtils.getTokenKey(tokenInfo.getAppKey(), tokenInfo.getUserId())).toString(), Token.class);

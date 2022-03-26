@@ -3,17 +3,14 @@ package com.facecto.code.token.auth;
 import com.alibaba.fastjson.JSONObject;
 import com.facecto.code.base.CodeException;
 import com.facecto.code.base.CodeResult;
-import com.facecto.code.base.util.HttpContextUtils;
-import com.facecto.code.token.properties.TokenProperties;
+import com.facecto.code.base.util.CodeHttpUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMethod;
-
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -30,8 +27,6 @@ import java.io.IOException;
  */
 public class AuthFilter extends AuthenticatingFilter {
 
-    @Autowired
-    TokenProperties tokenProperties;
 
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
@@ -53,7 +48,7 @@ public class AuthFilter extends AuthenticatingFilter {
         if (StringUtils.isBlank(token)) {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-            httpResponse.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
+            httpResponse.setHeader("Access-Control-Allow-Origin", CodeHttpUtils.getOrigin());
             httpResponse.setContentType("application/json;charset=UTF-8");
             String json = JSONObject.toJSONString(CodeResult.error(HttpStatus.SC_UNAUTHORIZED, "Need authorization!"));
             httpResponse.getWriter().print(json);
@@ -86,7 +81,7 @@ public class AuthFilter extends AuthenticatingFilter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         httpResponse.setContentType("application/json;charset=UTF-8");
         httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-        httpResponse.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
+        httpResponse.setHeader("Access-Control-Allow-Origin", CodeHttpUtils.getOrigin());
         try {
             Throwable throwable = e.getCause() == null ? e : e.getCause();
             CodeResult result = CodeResult.error(HttpStatus.SC_UNAUTHORIZED, throwable.getMessage());

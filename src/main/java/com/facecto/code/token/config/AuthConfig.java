@@ -5,6 +5,7 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,6 +16,10 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class AuthConfig {
+
+    @Autowired
+    TokenConfig.AuthFilter authFilter;
+
     @Bean("securityManager")
     public SecurityManager securityManager(AuthRealm authRealm) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
@@ -22,6 +27,24 @@ public class AuthConfig {
         securityManager.setRememberMeManager(null);
         return securityManager;
     }
+
+//    @Bean("shiroFilter")
+//    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
+//        ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
+//        shiroFilter.setSecurityManager(securityManager);
+//        Map<String, Filter> filters = new HashMap<>();
+//        filters.put("code-auth", new AuthFilter());
+//        shiroFilter.setFilters(filters);
+//        Map<String, String> filterMap = new LinkedHashMap<>();
+//        for (String a: authFilter.getAnnos()) {
+//            filterMap.put(a,"anon");
+//        }
+//        for(String b: authFilter.getAuths()){
+//            filterMap.put(b,"code-auth");
+//        }
+//        shiroFilter.setFilterChainDefinitionMap(filterMap);
+//        return shiroFilter;
+//    }
 
     @Bean("lifecycleBeanPostProcessor")
     public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
