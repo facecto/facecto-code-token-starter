@@ -7,8 +7,8 @@ import com.facecto.code.token.config.TokenConfig;
 import com.facecto.code.token.entity.Token;
 import com.facecto.code.token.entity.TokenInfo;
 import com.facecto.code.token.entity.TokenUser;
-import com.facecto.code.token.util.TokenKeysUtils;
 import com.facecto.code.token.util.CodeRedisUtils;
+import com.facecto.code.token.util.TokenKeysUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -34,7 +34,6 @@ public class TokenHandler {
 
     @Autowired
     TokenConfig.ApiToken apiToken;
-
 
     /**
      * Get tokenUser by principal
@@ -222,13 +221,13 @@ public class TokenHandler {
      */
     private boolean checkToken(String token) {
         String baseKey = apiToken.getKey();
-        // 检测token是否存在于redis
-        // 如果存在返回true
-        // 如果不存在返回false
-        // 这个方法要嵌入到所有的token操作中，避免redis已经没有token，还在用字符串token做鉴权
+        TokenInfo tokenInfo = getTokenInfoByClaim(token);
+        Object oo = codeRedisUtils.getObject(TokenKeysUtils.getUserKey(tokenInfo.getAppKey(), tokenInfo.getUserId()));
+        if (oo != null) {
+            return true;
+        }
         return false;
     }
-
 
     /**
      * Create a token and save in redis

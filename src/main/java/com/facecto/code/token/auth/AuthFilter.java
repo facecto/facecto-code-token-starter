@@ -27,7 +27,6 @@ import java.io.IOException;
  */
 public class AuthFilter extends AuthenticatingFilter {
 
-
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
         String token = getRequestToken((HttpServletRequest) request);
