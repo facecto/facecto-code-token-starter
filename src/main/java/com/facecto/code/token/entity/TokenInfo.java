@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
- * @author Jon So, https://cto.pub, https://github.com/facecto
+ * @author Jon So, https://facecto.com, https://github.com/facecto
  * @version v1.1.0 (2021/08/08)
  */
 @Data

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * SafeConfig
  *
- * @author Jon So, https://cto.pub, https://facecto.com, https://github.com/facecto
+ * @author Jon So, https://facecto.com, https://github.com/facecto
  * @version v1.1.0 (2022/01/01)
  */
 @Configuration

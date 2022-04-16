@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 
 /**
- * @author Jon So, https://cto.pub, https://github.com/facecto
+ * @author Jon So, https://facecto.com, https://github.com/facecto
  * @version v1.1.2 (2021/02/01)
  */
 @Configuration
